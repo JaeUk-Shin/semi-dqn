@@ -12,7 +12,6 @@ import random
 
 
 class SemiDQNAgent:
-    # TODO : make GPU available
     def __init__(self,
                  dimS,
                  nA,
@@ -114,7 +113,6 @@ class SemiDQNAgent:
             # see Puterman, 1994 for nice introduction to the theory of semi-MDPs
             # $r\Delta t + \gamma^{\Delta t} \max_{a^\prime} Q (s^\prime, a^\prime)$
             target = r * dt + (gamma**dt) * (1. - d) * q_next
-
         # loss construction & parameter update
         out = self.Q(s).gather(1, a)
 

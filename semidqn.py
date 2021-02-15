@@ -86,12 +86,13 @@ def run_dqn(env_id,
             dt = info['dt']
             carried = info['carried']
             t = info['elapsed time']
-
+            # TODO : expand prioritized replay buffer
             agent.buffer.append(s, a, r, s_next, False, dt)
             agent.train()
             s = s_next                          # please don't forget this...please...
         eps = max(eps * eps_decay, min_eps)     # adjust exploration rate
-        print('{} (episode {} / epsilon = {:.2f}) reward = {:.4f} | carried = {}'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        log_time = datetime.datetime.now(tz=None).strftime("%Y-%m-%d %H:%M:%S")
+        print('{} (episode {} / epsilon = {:.2f}) reward = {:.4f} | carried = {}'.format(log_time,
               i, eps, ep_reward, carried))
         logger.writerow([i, ep_reward, carried])
 
