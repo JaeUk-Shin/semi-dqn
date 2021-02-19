@@ -81,26 +81,7 @@ def get_env_spec(env):
 
 
 def set_log_dir(env_id):
-    """
-    if not os.path.exists('./train_log/'):
-        os.mkdir('./train_log/')
-    if not os.path.exists('./eval_log/'):
-        os.mkdir('./eval_log/')
-
-    if not os.path.exists('./train_log/' + env_id + '/'):
-        os.mkdir('./train_log/' + env_id + '/')
-    if not os.path.exists('./eval_log/' + env_id + '/'):
-        os.mkdir('./eval_log/' + env_id + '/')
-    """
-
-    if not os.path.exists('./log/'):
-        os.mkdir('./log/')
-    if not os.path.exists('./log/' + env_id + '/'):
-        os.mkdir('./log/' + env_id + '/')
-
-    if not os.path.exists('./checkpoints/'):
-        os.mkdir('./checkpoints/')
-    if not os.path.exists('./checkpoints/' + env_id + '/'):
-        os.mkdir('./checkpoints/' + env_id + '/')
-
+    log_pth = './log/' + env_id + '/'
+    os.makedirs(log_pth)
+    os.makedirs('./checkpoints/' + env_id + '/')
     return
