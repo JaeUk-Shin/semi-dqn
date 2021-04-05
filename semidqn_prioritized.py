@@ -126,10 +126,17 @@ def run_prioritized(env_id='Lifter-v0',
         print('{} (episode {} / epsilon = {:.2f}) reward = {:.4f} | max_seen_priority = {:.2f} | replay size = {}'.format(log_time,
               i, epsilon, ep_reward, agent.max_seen_priority, replay_size))
         print('+----------------------------------------------FAB-STATISTICS----------------------------------------------+')
-        print('carried = {}'.format(carried), 'remain quantity : ', wt_qt, 'visit_count : ', info['visit_count'], 'load_two : ', info['load_two'], 'unload_two : ', info['unload_two'], 'load_sequential : ', info['load_sequential'])
+        print('carried = {}'.format(carried),
+              'remain quantity : ', wt_qt,
+              'visit_count : ', info['visit_count'],
+              'load_two : ', info['load_two'],
+              'unload_two : ', info['unload_two'],
+              'load_sequential : ', info['load_sequential'],
+              'total : ', info['total']
+              )
         print('+==========================================================================================================+')
         print('\n', end='')
-        logger.writerow([i, ep_reward, carried] + wt_qt + list(info['visit_count']) + [info['load_two'], info['unload_two'], info['load_sequential']])
+        logger.writerow([i, ep_reward, carried] + wt_qt + list(info['visit_count']) + [info['load_two'], info['unload_two'], info['load_sequential']] + info['total'])
 
     log_file.close()
 
