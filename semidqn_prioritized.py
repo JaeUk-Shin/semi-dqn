@@ -11,8 +11,8 @@ import os
 
 
 def run_prioritized(env_id='Lifter-v0',
-                    gamma=0.999,
-                    lr=0.00025 / 4,
+                    gamma=0.99999,
+                    lr=1e-4,
                     polyak=1e-3,
                     hidden1=256,
                     hidden2=256,
@@ -36,6 +36,7 @@ def run_prioritized(env_id='Lifter-v0',
     num_ep = int(num_ep)
     buffer_size = int(buffer_size)
     env = gym.make(env_id)
+    test_env = gym.make(env_id)
 
     dimS = env.observation_space.shape[0]   # dimension of state space
     nA = env.action_space.n                 # number of actions
@@ -110,6 +111,7 @@ def run_prioritized(env_id='Lifter-v0',
             dt = info['dt']
             carried = info['carried']
             t = info['elapsed time']
+            wt_qt = info['waiting quantity']
             transition = Transition(s_tm1=s, a_tm1=a, r_t=r, s_t=s_next, dt=dt, d=d)
 
             agent.replay.add(item=transition, priority=agent.max_seen_priority)
@@ -119,9 +121,15 @@ def run_prioritized(env_id='Lifter-v0',
         replay_size = agent.replay.size
 
         # TODO : improve logging
-        print('{} (episode {} / epsilon = {:.2f}) reward = {:.4f} | carried = {} | max_seen_priority = {:.2f} | replay size = {}'.format(log_time,
-              i, epsilon, ep_reward, carried, agent.max_seen_priority, replay_size))
-        logger.writerow([i, ep_reward, carried])
+        print('+==========================================================================================================+')
+        print('+---------------------------------------------TRAIN-STATISTICS---------------------------------------------+')
+        print('{} (episode {} / epsilon = {:.2f}) reward = {:.4f} | max_seen_priority = {:.2f} | replay size = {}'.format(log_time,
+              i, epsilon, ep_reward, agent.max_seen_priority, replay_size))
+        print('+----------------------------------------------FAB-STATISTICS----------------------------------------------+')
+        print('carried = {}'.format(carried), 'remain quantity : ', wt_qt, 'visit_count : ', info['visit_count'], 'load_two : ', info['load_two'], 'unload_two : ', info['unload_two'], 'load_sequential : ', info['load_sequential'])
+        print('+==========================================================================================================+')
+        print('\n', end='')
+        logger.writerow([i, ep_reward, carried] + wt_qt + list(info['visit_count']) + [info['load_two'], info['unload_two'], info['load_sequential']])
 
     log_file.close()
 

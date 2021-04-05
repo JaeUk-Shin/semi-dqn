@@ -48,7 +48,7 @@ class SemiDQNAgent:
         # replay buffer for experience replay in semi-MDP
         self.buffer = SemiMDPReplayBuffer(dimS, buffer_size)
         self.batch_size = batch_size
-
+        self.counter = 0
         # function which returns the set of executable actions at a given state
         # expected return type : numpy array when 2nd arg = True / list when False
         self.action_map = action_map
@@ -63,9 +63,13 @@ class SemiDQNAgent:
         return
 
     def get_action(self, state, eps):
+
         dimS = self.dimS
         possible_actions = self.action_map(state)  # return a set of indices instead of a mask vector
         u = np.random.rand()
+        if self.counter == 0:
+            self.counter += 1
+            return 0
         if u < eps:
             # random selection among executable actions
             a = random.choice(possible_actions)
@@ -79,6 +83,7 @@ class SemiDQNAgent:
             a = np.argmax(q.cpu().data.numpy() + m)
             # print('control greedily selected : ', a)
             # print('value function : ', q.cpu().data.numpy() + self.marker(state))
+
         return a
 
     def train(self):
@@ -165,7 +170,7 @@ class SemiDQNAgent:
 
 def mask(actions: List[int]) -> np.ndarray:
     # generate a mask representing the set
-    m = np.full(30, -np.inf)
+    m = np.full(36, -np.inf)
     # 0 if admissible, -inf else
     m[actions] = 0.
     return m

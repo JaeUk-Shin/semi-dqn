@@ -82,6 +82,6 @@ def get_env_spec(env):
 
 def set_log_dir(env_id):
     log_pth = './log/' + env_id + '/'
-    os.makedirs(log_pth)
-    os.makedirs('./checkpoints/' + env_id + '/')
+    os.makedirs(log_pth, exist_ok=True)
+    os.makedirs('./checkpoints/' + env_id + '/', exist_ok=True)
     return

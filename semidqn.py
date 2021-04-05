@@ -10,8 +10,8 @@ import datetime
 
 
 def run_dqn(env_id,
-            gamma=0.999,
-            lr=1e-3,
+            gamma=0.99999,
+            lr=1e-4,
             polyak=1e-3,
             hidden1=256,
             hidden2=256,
@@ -38,7 +38,7 @@ def run_dqn(env_id,
     # (physical) length of the time horizon of each truncated episode
     # each episode run for t \in [0, T)
     # set for RL in semi-MDP setting
-    T = 300
+    T = 3000000
 
     agent = SemiDQNAgent(dimS,
                          nA,
@@ -89,8 +89,8 @@ def run_dqn(env_id,
             s_next, r, d, info = env.step(a)
             ep_reward += gamma ** t * r
             dt = info['dt']
-            carried = info['carried']
-            t = info['elapsed time']
+            # carried = info['carried']
+            # t = info['elapsed time']
             # TODO : expand prioritized replay buffer
             agent.buffer.append(s, a, r, s_next, False, dt)
             agent.train()
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     run_dqn(args.env,
-            gamma=0.999,
+            gamma=0.99999,
             lr=args.q_lr,
             polyak=args.tau,
             hidden1=args.hidden1,
