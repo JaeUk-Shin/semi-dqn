@@ -136,7 +136,7 @@ def run_prioritized(env_id='Lifter-v0',
               )
         print('+==========================================================================================================+')
         print('\n', end='')
-        logger.writerow([i, ep_reward, carried] + wt_qt + list(info['visit_count']) + [info['load_two'], info['unload_two'], info['load_sequential']] + info['total'])
+        logger.writerow([i, ep_reward, carried] + wt_qt + list(info['visit_count']) + [info['load_two'], info['unload_two'], info['load_sequential']] + list(info['total']))
 
     log_file.close()
 
