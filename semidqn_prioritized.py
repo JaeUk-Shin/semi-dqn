@@ -80,7 +80,7 @@ def run_prioritized(env_id='Lifter-v0',
 
     if pth is None:
         # default location of directory for training log
-        pth = './log' + env_id + '/'
+        pth = './log/' + env_id + '/'
 
     os.makedirs(pth, exist_ok=True)
     current_time = time.strftime("%m_%d-%H%_M_%S")
@@ -121,20 +121,20 @@ def run_prioritized(env_id='Lifter-v0',
         replay_size = agent.replay.size
 
         # TODO : improve logging
-        print('+==========================================================================================================+')
-        print('+---------------------------------------------TRAIN-STATISTICS---------------------------------------------+')
-        print('{} (episode {} / epsilon = {:.2f}) reward = {:.4f} | max_seen_priority = {:.2f} | replay size = {}'.format(log_time,
+        print('+' + '=' * 78 + '+')
+        print('+' + '-' * 31 + 'TRAIN-STATISTICS' + '-' * 31 + '+')
+        print('{} (episode {} / epsilon = {:.2f}) reward = {:.4f} \nmax_seen_priority = {:.2f} \nreplay size = {}'.format(log_time,
               i, epsilon, ep_reward, agent.max_seen_priority, replay_size))
-        print('+----------------------------------------------FAB-STATISTICS----------------------------------------------+')
-        print('carried = {}'.format(carried),
-              'remain quantity : ', wt_qt,
-              'visit_count : ', info['visit_count'],
-              'load_two : ', info['load_two'],
-              'unload_two : ', info['unload_two'],
-              'load_sequential : ', info['load_sequential'],
+        print('+' + '-' * 32 + 'FAB-STATISTICS' + '-' * 32 + '+')
+        print('carried = {}/{}\n'.format(carried, sum(info['total'])) +
+              'remain quantity : {}\n'.format(wt_qt) +
+              'visit_count : {}\n'.format(info['visit_count']) +
+              'load_two : {}\n'.format(info['load_two']) +
+              'unload_two : {}\n'.format(info['unload_two']) +
+              'load_sequential : {}\n'.format(info['load_sequential']) +
               'total : ', info['total']
               )
-        print('+==========================================================================================================+')
+        print('+' + '=' * 78 + '+')
         print('\n', end='')
         logger.writerow([i, ep_reward, carried] + wt_qt + list(info['visit_count']) + [info['load_two'], info['unload_two'], info['load_sequential']] + list(info['total']))
 
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     default_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     parser.add_argument('--env', required=True)
-    parser.add_argument('--max_iter', required=False, default=2e3, type=float)
+    parser.add_argument('--max_iter', required=False, default=1e3, type=float)
     parser.add_argument('--eval_interval', required=False, default=1000, type=int)
     parser.add_argument('--render', required=False, default=False, type=bool)
     parser.add_argument('--tau', required=False, default=1e-3, type=float)
@@ -221,11 +221,12 @@ if __name__ == '__main__':
     parser.add_argument('--fill_buffer', required=False, default=1000, type=int)
     parser.add_argument('--batch_size', required=False, default=32, type=int)
     parser.add_argument('--device', required=False, default=default_device, type=str)
+    parser.add_argument('--gamma', required=False, default=0.99999, type=float)
 
     args = parser.parse_args()
 
     run_prioritized(args.env,
-                    gamma=0.999,
+                    gamma=args.gamma,
                     lr=args.q_lr,
                     polyak=args.tau,
                     hidden1=args.hidden1,
