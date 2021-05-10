@@ -7,7 +7,7 @@ from semidqn_prioritized import run_prioritized
 
 
 if __name__ == '__main__':
-    gpu_count = device_count()
+    # gpu_count = device_count()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--cfg_pth', required=True, type=str)
@@ -22,7 +22,7 @@ if __name__ == '__main__':
         if file_name.endswith('.json'):
             f = open(cfg_pth + '/' + file_name)
             params = json.load(f)
-            params['device'] = 'cuda:{}'.format(device)
+            # params['device'] = 'cuda:{}'.format(device)
             log_pth = './log/' + pth + file_name.replace('.json', '') + '/'
             params['pth'] = log_pth
 
@@ -30,4 +30,4 @@ if __name__ == '__main__':
 
             p = Process(target=run_prioritized, kwargs=params)
             p.start()
-            device = (device + 1) % gpu_count
+            # device = (device + 1) % gpu_count

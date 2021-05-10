@@ -42,7 +42,7 @@ def run_dqn(env_id,
 
     agent = SemiDQNAgent(dimS,
                          nA,
-                         env.action_map,
+                         env.action_map_no_wt,
                          gamma,
                          hidden1,
                          hidden2,

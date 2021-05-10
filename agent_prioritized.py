@@ -134,7 +134,7 @@ class SemiDQNAgent:
             # target construction in semi-MDP case
             # see [Puterman, 1994] for introduction to the theory of semi-MDPs
             # $r\Delta t + \gamma^{\Delta t} \max_{a^\prime} Q (s^\prime, a^\prime)$
-            target = r * dt + (gamma ** dt) * (1. - d) * q_next
+            target = r + (gamma ** dt) * (1. - d) * q_next
 
         # loss construction & parameter update
         out = torch.squeeze(self.Q(s).gather(1, a))
@@ -157,39 +157,46 @@ class SemiDQNAgent:
 
         return
 
-    def eval(self, env_id, t, eval_num=5):
+    def eval(self, test_env, eval_num=5):
         """
         evaluation of agent
         during evaluation, agent execute noiseless actions
         """
-        env = gym.make(env_id)
-
-        log = []
+        print('evaluating on 24 hrs data...', end=' ')
+        reward_log = np.zeros(eval_num)
+        num_log = np.zeros(eval_num, dtype=int)
         for ep in range(eval_num):
-            state = env.reset()
+            state = test_env.reset()
             step_count = 0
-            ep_reward = 0
+            ep_reward = 0.
+            t = 0.
             done = False
-
+            info = None
             while not done:
                 if self.render and ep == 0:
-                    env.render()
+                    test_env.render()
 
-                action = self.get_action(state, 0.0)  # noiseless evaluation
-                next_state, reward, done, _ = env.step(action)
+                action = self.get_action(state, 0.)  # noiseless evaluation
+                next_state, reward, done, info = test_env.step(action)
+
                 step_count += 1
                 state = next_state
-                ep_reward += reward
+                ep_reward += self.gamma ** t * reward
+                t = info['elapsed_time']
+
+            # save carried quantity at the end of the episode
+            carried = info['carried']
+            reward_log[ep] = ep_reward
+            num_log[ep] = carried
 
             if self.render and ep == 0:
-                env.close()
+                test_env.close()
+        avg = np.mean(reward_log)
+        num_avg = np.mean(num_log)
 
-            log.append(ep_reward)
-        avg = sum(log) / eval_num
+        print('average reward : {:.4f} | carried : {}'.format(avg, num_avg))
 
-        print('step {} : {:.4f}'.format(t, avg))
-
-        return [t, avg]
+        return [avg, num_avg]
 
 
 def mask(actions: List[int]) -> np.ndarray:
