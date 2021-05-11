@@ -29,6 +29,7 @@ def run_prioritized(env_id='Lifter-v0',
                     importance_sampling_exponent_end=1.,
                     uniform_sample_prob=1e-3,
                     normalize_weights=True,
+                    clipped=False,
                     device='cuda',
                     pth=None,
                     render=False):
@@ -75,6 +76,7 @@ def run_prioritized(env_id='Lifter-v0',
                          anneal_schedule=anneal_schedule,
                          uniform_sample_prob=uniform_sample_prob,
                          normalize_weights=normalize_weights,
+                         clipped=clipped,
                          device=device,
                          render=render
                          )
@@ -145,12 +147,12 @@ def run_prioritized(env_id='Lifter-v0',
         print('+' + '=' * 78 + '+')
         print('\n', end='')
         logger.writerow([i, ep_reward, carried] + wt_qt + list(info['visit_count']) + [info['load_two'], info['unload_two'], info['load_sequential']] + list(info['total']) + [info['pod_total']])
-
+        """
         if i % eval_interval == 0:
             result = agent.eval(test_env, eval_num=eval_num)
             log = [i] + result
             eval_logger.writerow(log)
-
+        """
     log_file.close()
     eval_log_file.close()
 
@@ -231,6 +233,7 @@ if __name__ == '__main__':
     parser.add_argument('--device', required=False, default=default_device, type=str)
     parser.add_argument('--gamma', required=False, default=0.99, type=float)
     parser.add_argument('--num_trials', required=False, default=1, type=int)
+    parser.add_argument('--clipped', action='store_true')
 
     args = parser.parse_args()
     for _ in range(args.num_trials):
@@ -248,5 +251,6 @@ if __name__ == '__main__':
                         start_train=args.start_train,
                         eval_interval=args.eval_interval,
                         eval_num=args.eval_num,
+                        clipped=args.clipped,
                         device=args.device,
                         render=args.render)

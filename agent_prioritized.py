@@ -6,7 +6,7 @@ from torch.nn import MSELoss
 import gym
 from utils import freeze
 from buffer import SemiMDPReplayBuffer
-from model import Critic
+from model import Critic, DoubleCritic
 from typing import Callable, List
 import random
 from replay import PrioritizedTransitionReplay, Transition
@@ -28,6 +28,7 @@ class SemiDQNAgent:
                  normalize_weights,
                  uniform_sample_prob,
                  anneal_schedule: Callable,
+                 clipped=False,
                  device='cpu',
                  render=False):
 
@@ -39,9 +40,12 @@ class SemiDQNAgent:
 
         self.dimS = dimS
         self.nA = nA
-
+        self.clipped = clipped
         # set networks
-        self.Q = Critic(dimS, nA, hidden_size1=hidden1, hidden_size2=hidden2).to(device)
+        if clipped:
+            self.Q = DoubleCritic(dimS, nA, hidden_size1=hidden1, hidden_size2=hidden2).to(device)
+        else:
+            self.Q = Critic(dimS, nA, hidden_size1=hidden1, hidden_size2=hidden2).to(device)
         self.target_Q = copy.deepcopy(self.Q).to(device)
         freeze(self.target_Q)
 
@@ -94,7 +98,10 @@ class SemiDQNAgent:
             # greedy selection among executable actions
             # non-admissible actions are not considered since their value corresponds to -inf
             s = torch.tensor(state, dtype=torch.float).view(1, dimS).to(self.device)
-            q = self.Q(s)
+            if self.clipped:
+                q = self.Q.Q1(s)
+            else:
+                q = self.Q(s)
             a = np.argmax(q.cpu().data.numpy() + m)
             # print('control greedily selected : ', a)
             # print('value function : ', q.cpu().data.numpy() + self.marker(state))
@@ -129,18 +136,29 @@ class SemiDQNAgent:
             # this can be done via masking invalid entries
             # double DQN
             # Be careful of shape of each tensor!
-            a_inner = torch.unsqueeze(torch.max(self.Q(s_next) + m, 1)[1], 1)
-            q_next = torch.squeeze(self.target_Q(s_next).gather(1, a_inner))
+            if self.clipped:
+                a_inner = torch.unsqueeze(torch.max(self.Q.Q1(s_next) + m, 1)[1], 1)
+                q_next1, q_next2 = self.target_Q(s_next)
+                q_next = torch.min(torch.squeeze(q_next1.gather(1, a_inner)), torch.squeeze(q_next2.gather(1, a_inner)))
+            else:
+                a_inner = torch.unsqueeze(torch.max(self.Q(s_next) + m, 1)[1], 1)
+                q_next = torch.squeeze(self.target_Q(s_next).gather(1, a_inner))
             # target construction in semi-MDP case
             # see [Puterman, 1994] for introduction to the theory of semi-MDPs
             # $r\Delta t + \gamma^{\Delta t} \max_{a^\prime} Q (s^\prime, a^\prime)$
             target = r + (gamma ** dt) * (1. - d) * q_next
 
         # loss construction & parameter update
-        out = torch.squeeze(self.Q(s).gather(1, a))
-
-        td_errors = target - out
-        loss = .5 * ((w * td_errors) ** 2).sum()
+        if self.clipped:
+            a1_vector, a2_vector = self.Q(s)
+            out1 = torch.squeeze(a1_vector.gather(1, a))
+            out2 = torch.squeeze(a2_vector.gather(1, a))
+            td_errors = target - out1
+            loss = .5 * ((w * (target - out1)) ** 2).sum() + .5 * ((w * (target - out2)) ** 2).sum()
+        else:
+            out = torch.squeeze(self.Q(s).gather(1, a))
+            td_errors = target - out
+            loss = .5 * ((w * td_errors) ** 2).sum()
 
         self.optimizer.zero_grad()
         loss.backward()
