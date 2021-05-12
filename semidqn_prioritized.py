@@ -118,7 +118,7 @@ def run_prioritized(env_id='Lifter-v0',
         ep_reward = 0.
         epsilon = exploration_schedule(i)
 
-        while t < T:
+        while t < T and global_t < total_operation_hr:
             if evaluation_count * evaluation_interval <= global_t:
                 # evaluation stage
                 print(global_t)
