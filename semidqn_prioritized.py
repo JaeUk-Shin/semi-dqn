@@ -121,7 +121,6 @@ def run_prioritized(env_id='Lifter-v0',
         while t < T and global_t < total_operation_hr:
             if evaluation_count * evaluation_interval <= global_t:
                 # evaluation stage
-                print(global_t)
                 result = agent.eval(test_env, T=14400, eval_num=eval_num)
                 log = [i] + result
                 eval_logger.writerow(log)
