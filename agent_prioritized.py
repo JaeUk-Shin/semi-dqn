@@ -175,7 +175,7 @@ class SemiDQNAgent:
 
         return
 
-    def eval(self, test_env, eval_num=5):
+    def eval(self, test_env, T=14400, eval_num=5):
         """
         evaluation of agent
         during evaluation, agent execute noiseless actions
@@ -188,9 +188,11 @@ class SemiDQNAgent:
             step_count = 0
             ep_reward = 0.
             t = 0.
-            done = False
+            # done = False
             info = None
-            while not done:
+            # while not done:
+            while t < T:
+                # half hr evaluation
                 if self.render and ep == 0:
                     test_env.render()
 
@@ -202,8 +204,9 @@ class SemiDQNAgent:
                 ep_reward += self.gamma ** t * reward
                 t = info['elapsed_time']
 
+
             # save carried quantity at the end of the episode
-            carried = info['carried']
+            carried = test_env.operation_log['carried']
             reward_log[ep] = ep_reward
             num_log[ep] = carried
 
