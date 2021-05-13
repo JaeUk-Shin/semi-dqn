@@ -126,8 +126,8 @@ class SemiDQNAgent:
             a = torch.unsqueeze(torch.tensor(transitions[1], dtype=torch.long).to(device), 1)  # action type : discrete
             r = torch.tensor(transitions[2], dtype=torch.float).to(device)
             s_next = torch.tensor(transitions[3], dtype=torch.float).to(device)
-            d = torch.tensor(transitions[4], dtype=torch.float).to(device)
-            dt = torch.tensor(transitions[5], dtype=torch.float).to(device)
+            dt = torch.tensor(transitions[4], dtype=torch.float).to(device)
+            d = torch.tensor(transitions[5], dtype=torch.float).to(device)
 
             m = torch.tensor(m, dtype=torch.float).to(device)
             w = torch.tensor(weights, dtype=torch.float).to(device)
