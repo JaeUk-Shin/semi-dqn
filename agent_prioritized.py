@@ -5,7 +5,6 @@ from torch.optim import Adam
 from torch.nn import MSELoss
 import gym
 from utils import freeze
-from buffer import SemiMDPReplayBuffer
 from model import Critic, DoubleCritic
 from typing import Callable, List
 import random
@@ -53,12 +52,11 @@ class SemiDQNAgent:
         # discount factor & polyak constant
         self.gamma = gamma
         self.tau = tau
+        self.batch_size = batch_size
 
         replay_structure = Transition(s_tm1=None, a_tm1=None, r_t=None, s_t=None, dt=None, d=None)
 
         # replay buffer for experience replay in semi-MDP
-        self.buffer = SemiMDPReplayBuffer(dimS, buffer_size)
-        self.batch_size = batch_size
         # prioritized experience replay for semi-DQN
         self.replay = PrioritizedTransitionReplay(capacity=buffer_size,
                                                   structure=replay_structure,
@@ -126,8 +124,8 @@ class SemiDQNAgent:
             a = torch.unsqueeze(torch.tensor(transitions[1], dtype=torch.long).to(device), 1)  # action type : discrete
             r = torch.tensor(transitions[2], dtype=torch.float).to(device)
             s_next = torch.tensor(transitions[3], dtype=torch.float).to(device)
-            dt = torch.tensor(transitions[4], dtype=torch.float).to(device)
-            d = torch.tensor(transitions[5], dtype=torch.float).to(device)
+            d = torch.tensor(transitions[4], dtype=torch.float).to(device)
+            dt = torch.tensor(transitions[5], dtype=torch.float).to(device)
 
             m = torch.tensor(m, dtype=torch.float).to(device)
             w = torch.tensor(weights, dtype=torch.float).to(device)
@@ -146,7 +144,7 @@ class SemiDQNAgent:
             # target construction in semi-MDP case
             # see [Puterman, 1994] for introduction to the theory of semi-MDPs
             # $r\Delta t + \gamma^{\Delta t} \max_{a^\prime} Q (s^\prime, a^\prime)$
-            target = r + (gamma ** dt) * (1. - d) * q_next
+            target = r + gamma ** dt * (1. - d) * q_next
 
         # loss construction & parameter update
         if self.clipped:
