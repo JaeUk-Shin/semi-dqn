@@ -117,8 +117,9 @@ def run_prioritized(env_id='Lifter-v0',
         t = 0.  # physical elapsed time of the present episode
         ep_reward = 0.
         epsilon = exploration_schedule(i)
-
-        while t < T and global_t < total_operation_hr:
+        if global_t >= total_operation_hr:
+            break
+        while t < T:
             if evaluation_count * evaluation_interval <= global_t:
                 # evaluation stage
                 result = agent.eval(test_env, T=14400, eval_num=eval_num)
@@ -241,7 +242,7 @@ if __name__ == '__main__':
     parser.add_argument('--env', required=True)
     parser.add_argument('--num_ep', required=False, default=1e3, type=float)
     parser.add_argument('--eval_interval', required=False, default=10, type=int)
-    parser.add_argument('--eval_num', required=False, default=5, type=int)
+    parser.add_argument('--eval_num', required=False, default=3, type=int)
     parser.add_argument('--render', required=False, default=False, type=bool)
     parser.add_argument('--tau', required=False, default=1e-3, type=float)
     parser.add_argument('--q_lr', required=False, default=2e-4, type=float)
@@ -250,11 +251,12 @@ if __name__ == '__main__':
     parser.add_argument('--train_interval', required=False, default=50, type=int)
     parser.add_argument('--start_train', required=False, default=1000, type=int)
     parser.add_argument('--fill_buffer', required=False, default=1000, type=int)
-    parser.add_argument('--batch_size', required=False, default=128, type=int)
+    parser.add_argument('--batch_size', required=False, default=32, type=int)
     parser.add_argument('--device', required=False, default=default_device, type=str)
     parser.add_argument('--gamma', required=False, default=0.999, type=float)
     parser.add_argument('--num_trials', required=False, default=1, type=int)
     parser.add_argument('--clipped', action='store_true')
+    parser.add_argument('--pth', required=False, default=None, type=str)
     parser.add_argument('--T', required=False, default=300.0, type=float)
 
     args = parser.parse_args()
@@ -274,6 +276,7 @@ if __name__ == '__main__':
                         eval_interval=args.eval_interval,
                         eval_num=args.eval_num,
                         T=args.T,
+                        pth=args.pth,
                         clipped=args.clipped,
                         device=args.device,
                         render=args.render)

@@ -175,7 +175,7 @@ class SemiDQNAgent:
 
         return
 
-    def eval(self, test_env, T=14400, eval_num=5):
+    def eval(self, test_env, T=14400, eval_num=3):
         """
         evaluation of agent
         during evaluation, agent execute noiseless actions
